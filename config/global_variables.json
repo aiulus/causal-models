@@ -1,0 +1,9 @@
+{
+  "PATH_SCMs": "outputs/scms/",
+  "PATH_GRAPHS": "outputs/graphs/",
+  "PATH_PLOTS": "outputs/plots/",
+  "PATH_DATA": "outputs/data/",
+  "MAX_POLYNOMIAL_DEGREE": 3,
+  "COEFFICIENTS": [1, 2, 3],
+  "DISTS": ["N", "Exp", "Ber"]
+}

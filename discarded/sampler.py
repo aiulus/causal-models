@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Dict, List, Callable
 
-from core.scm import SCM
+from discarded.scm import SCM
 
 
 class Sampler:
