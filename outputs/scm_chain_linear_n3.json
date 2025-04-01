@@ -1,0 +1,39 @@
+{
+  "nodes": [
+    "X1",
+    "X2",
+    "X3"
+  ],
+  "edges": [
+    [
+      "X1",
+      "X2"
+    ],
+    [
+      "X2",
+      "X3"
+    ]
+  ],
+  "functions": {
+    "X1": "<function generate_functions.<locals>.linear_func at 0x0000019A94C60550>",
+    "X2": "<function generate_functions.<locals>.linear_func at 0x0000019A94C60670>",
+    "X3": "<function generate_functions.<locals>.linear_func at 0x0000019A94C605E0>"
+  },
+  "noise": {
+    "X1": [
+      "gaussian",
+      0.0,
+      1.0
+    ],
+    "X2": [
+      "gaussian",
+      0.0,
+      1.0
+    ],
+    "X3": [
+      "gaussian",
+      0.0,
+      1.0
+    ]
+  }
+}
