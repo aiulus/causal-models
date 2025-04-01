@@ -4,22 +4,23 @@ from scm import noises as noise_utils
 from utils import io
 
 
-def _evaluate_function(f_str, data_dict):
+def _evaluate_function(f_str, data_dict, n_samples):
     """
-    Safely evaluate a lambda function string on data_dict inputs.
-    Assumes noise is added outside of this function.
+    Evaluate lambda string on sample-wise data_dict.
+    Returns an array of length n_samples.
     """
     import re
-
-    # Extract argument list from lambda string
     match = re.match(r'lambda\s*(.*?):', f_str)
     args = match.group(1).replace('(', '').replace(')', '').strip().split(',')
     args = [arg.strip() for arg in args if arg.strip() != '_']
 
-    f = eval(f_str)  # Preserve original behavior
+    f = eval(f_str)
 
-    input_vals = [data_dict[arg] for arg in args]
-    return f(*input_vals) if input_vals else f('_')
+    result = np.zeros(n_samples)
+    for i in range(n_samples):
+        input_vals = [data_dict[arg][i] for arg in args]
+        result[i] = f(*input_vals)
+    return result
 
 
 def sample_L1(scm, n_samples):
@@ -38,7 +39,8 @@ def sample_L1(scm, n_samples):
             data[X_j] = noise_data[X_j]
         else:
             f_j = scm.F[X_j]
-            result = _evaluate_function(f_j, data)
+            # result = _evaluate_function(f_j, data)
+            result = _evaluate_function(f_j, data, n_samples)
             data[X_j] = result + noise_data[X_j]
 
     return data
@@ -67,7 +69,8 @@ def sample_L2(scm, n_samples, interventions):
             data[X_j] = noise_data[X_j]
         else:
             f_j = scm.F[X_j]
-            result = _evaluate_function(f_j, data)
+            # result = _evaluate_function(f_j, data)
+            result = _evaluate_function(f_j, data, n_samples)
             data[X_j] = result + noise_data[X_j]
 
     return data
