@@ -22,3 +22,6 @@ def test_scm_generation_topologies(graph_type):
     print(result.stdout)
     print(result.stderr)
     assert result.returncode == 0
+
+
+

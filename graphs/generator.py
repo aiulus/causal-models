@@ -13,27 +13,34 @@ def generate_chain_graph(n):
 
 def generate_parallel_graph(n):
     """
-    Returns: Parallel: X1 → Y, X2 → Y, ..., Xn → Y
+    Generates a parallel graph where all nodes point to a common sink node Y.
+    Example: X1 → Y, X2 → Y, ..., Xn → Y
     """
-    nodes = [f"X{i}" for i in range(1, n + 1)] + ["Y"]
-    edges = [(f"X{i}", "Y") for i in range(1, n + 1)]
+    nodes = [f"X{i+1}" for i in range(n)] + ["Y"]
+    edges = [(node, "Y") for node in nodes if node != "Y"]
     return {"nodes": nodes, "edges": edges}
 
 
 def generate_random_dag(n, p):
     """
-    Random DAG via topological order + ER edge sampling.
+    Generate a random DAG by sampling edges only from earlier to later nodes
+    in a randomly shuffled topological order.
     """
+    # Step 1: Create variable names and shuffle for random topological order
     nodes = [f"X{i}" for i in range(1, n + 1)] + ["Y"]
+    random.shuffle(nodes)  # Enforce topological order randomly
+
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
 
+    # Step 2: Only allow edges from earlier → later in topological order
     for i in range(len(nodes)):
         for j in range(i + 1, len(nodes)):
             if random.random() < p:
                 G.add_edge(nodes[i], nodes[j])
 
     return {"nodes": list(G.nodes), "edges": list(G.edges)}
+
 
 
 def add_v_structure(G):

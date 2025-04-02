@@ -56,3 +56,9 @@ def test_confounder_injection():
     )
     G = nx_from_dict(G_dict)
     assert utils.count_confounders(G) >= 2
+
+
+def test_parallel_graph_is_dag():
+    G_dict = generator.generate_parallel_graph(3)
+    G = nx_from_dict(G_dict)
+    assert nx.is_directed_acyclic_graph(G), "Parallel graph should always be a DAG"
