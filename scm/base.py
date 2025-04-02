@@ -77,6 +77,11 @@ class SCM:
                 self.interventions[variable] = val
                 self.F[variable] = f"lambda _: {val}"
 
+                # Remove all incoming edges to variable (including noise)
+                parents = list(self.G.predecessors(variable))
+                for parent in parents:
+                    self.G.remove_edge(parent, variable)
+
             elif isinstance(val, dict):
                 # Extended intervention
                 self.interventions[variable] = val
