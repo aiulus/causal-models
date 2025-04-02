@@ -1,0 +1,14 @@
+{
+  "nodes": ["X1", "X2", "Y"],
+  "edges": [["X1", "X2"], ["X2", "Y"]],
+  "functions": {
+    "X1": "lambda _: 0",
+    "X2": "lambda X1: 2 * X1",
+    "Y": "lambda X2: 3 * X2"
+  },
+  "noise": {
+    "X1": ["gaussian", [0, 1]],
+    "X2": ["gaussian", [0, 1]],
+    "Y": ["gaussian", [0, 1]]
+  }
+}

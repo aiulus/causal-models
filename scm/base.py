@@ -7,6 +7,9 @@ from utils import io
 class SCM:
     def __init__(self, input):
         self.nodes, self.G, self.F, self.N = io.parse_scm(input)
+
+        self._validate_graph(self.G)
+
         self.interventions = {}
         self.rewards = {}
 
@@ -36,6 +39,33 @@ class SCM:
             "functions": functions,
             "noise": noise
         })
+
+
+    @classmethod
+    def from_json(cls, path):
+        """
+        Build SCM directly from a .json file containing nodes, edges, functions, noise.
+        """
+        with open(path, 'r') as f:
+            data = json.load(f)
+        return cls(data)
+
+    def _validate_graph(self, G):
+        import warnings
+        if not nx.is_directed_acyclic_graph(G):
+            warnings.warn("Graph must be a Directed Acyclic Graph (DAG).")
+
+        for u, v in G.edges():
+            if G.has_edge(v, u):
+                warnings.warn(f"Bidirectional edge detected between {u} and {v}")
+
+        for n in G.nodes():
+            if G.has_edge(n, n):
+                warnings.warn(f"Self-loop detected at node {n}")
+
+        isolated_nodes = list(nx.isolates(G))
+        if isolated_nodes:
+            warnings.warn(f"The following node(s) are isolated (no incoming or outgoing edges): {isolated_nodes}")
 
     def intervene(self, interventions):
         if isinstance(interventions, list):  # e.g., ["(X1, 5)"]
@@ -97,11 +127,65 @@ class SCM:
             data = sampler.sample_L2(self, n_samples, interventions)
         return data
 
-    def visualize(self):
+    def visualize(self, show_functions: bool = True, save_path: str = None):
         import matplotlib.pyplot as plt
-        pos = nx.spring_layout(self.G)
-        nx.draw(self.G, pos, with_labels=True, node_size=1000, node_color='lightblue', font_size=10, font_weight='bold')
+        import os
+
+        G_vis = self.G.copy()
+
+        # Try planar layout, fallback to spring
+        try:
+            pos = nx.planar_layout(self.G)
+        except nx.NetworkXException:
+            pos = nx.spring_layout(self.G, seed=42)
+
+        noise_nodes = []
+        for i, node in enumerate(self.nodes):
+            noise_node = f"N_{i + 1}"
+            noise_nodes.append(noise_node)
+            G_vis.add_node(noise_node)
+            G_vis.add_edge(noise_node, node)
+            # Position noise node slightly above its target
+            pos[noise_node] = (pos[node][0], pos[node][1] + 1)
+
+        plt.figure(figsize=(10, 8))
+
+        # Observed nodes
+        nx.draw_networkx_nodes(G_vis, pos, nodelist=self.nodes,
+                               node_color='white', edgecolors='black', node_size=1000)
+        nx.draw_networkx_labels(G_vis, pos, font_color='black', font_size=10)
+
+        # Structural edges
+        observed_edges = [(u, v) for u, v in self.G.edges if u in self.nodes and v in self.nodes]
+        nx.draw_networkx_edges(G_vis, pos, edgelist=observed_edges,
+                               edge_color='black', arrows=True,
+                               min_source_margin=14.5, min_target_margin=14.5, arrowsize=15)
+
+        # Noise nodes
+        nx.draw_networkx_nodes(G_vis, pos, nodelist=noise_nodes,
+                               node_shape='o', node_color='white', edgecolors='black', node_size=1000, alpha=0.6)
+        nx.draw_networkx_edges(G_vis, pos,
+                               edgelist=[(n, self.nodes[i]) for i, n in enumerate(noise_nodes)],
+                               style='dashed', edge_color='black', arrows=True,
+                               min_source_margin=14.5, min_target_margin=14.5, arrowsize=15)
+
+        # Functions display (optional)
+        if show_functions:
+            functions = self.F
+            function_str = "\n".join([f"{k}: {v}" for k, v in functions.items()])
+            plt.text(1.05, 0.5, function_str, ha='left', va='center',
+                     transform=plt.gca().transAxes, fontsize=8)
+
+        plt.title("Structural Causal Model")
+        plt.axis('off')
+        plt.tight_layout()
+
+        if save_path:
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            plt.savefig(save_path, bbox_inches='tight')
+            print(f"Plot saved to {save_path}")
         plt.show()
+        plt.close()
 
     def save_to_json(self, filename):
         import os

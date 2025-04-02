@@ -68,6 +68,7 @@ def main():
 
     if args.plot:
         plot.draw_scm(os.path.basename(save_path))
+        # scm.visualize()
 
 
 def nx_from_dict(graph_dict):
