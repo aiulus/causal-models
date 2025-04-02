@@ -1,5 +1,4 @@
 from scm.base import SCM
-from utils.plot import draw_scm
 
 FILE_NAME = "example_SCM.json"
 
