@@ -1,5 +1,5 @@
 # Structural Causal Models
-This repository implements basic capabilities tied to Structural Causal Models, adhering to the definition by Pearl et.al
+This repository implements basic capabilities tied to Structural Causal Models.
 
 
 ## Repository Structure
@@ -50,19 +50,19 @@ Example: Chain graph with 4 intervenable nodes, (standard) Gaussian noises, and 
 python scripts/generate_scm.py  --graph_type chain --n 4 --funct_type linear --noise_types "N(0,1)" --save --plot
 ```
 * **Inputs**:
-  * --graph_type: chain, parallel, random
-  * --n: number of nodes excluding Y
-  * --func_type: linear, polynomial
-  * --noise_types: 'N(0,1)', 'Exp(1.0)', 'Ber(0.5)'
+  * `--graph_type`: `chain`, `parallel`, `random`
+  * `--n`: number of nodes excluding Y
+  * `--func_type`: `linear`, `polynomial`
+  * `--noise_types`: `N(0,1)`, `Exp(1.0)`, `Ber(0.5)`
 * **Outputs**:
-  * JSON file under: outputs/scms/
-  * Plot under: outputs/plots       
+  * JSON file under: `outputs/scms/`
+  * Plot under: `outputs/plots`       
 
 #### b) From JSON files:
 ```plaintext
 python scripts/sample_data.py --file_name "SCM_n4_chain_graph_linear_functions_N(0,1).json" --mode l1 --n_samples 1000 --save --plot  
 ```
-* Files must be stored under outputs/scms/
+* Files must be stored under `outputs/scms/`
 
 #### c) From a set of structural equations:
 Example:
@@ -89,8 +89,8 @@ python scripts/sample_data.py
   --n_samples 1000 
   --save --plot
 ```
-* Output CSV: outputs/data/SCM_n4_chain_graph_linear_functions_N(0,1).csv
-* Output plot (histogram): outputs/plots/SCM_n4_chain_graph_linear_functions_N(0,1).png
+* Output CSV: `outputs/data/SCM_n4_chain_graph_linear_functions_N(0,1).csv`
+* Output plot (histogram): `outputs/plots/SCM_n4_chain_graph_linear_functions_N(0,1).png`
 #### b) Interventional (L2)
 ##### (i) Atomic interventions:
 From the console:
@@ -108,16 +108,16 @@ python scripts/sample_data.py \
   --file_name SCM_n4_chain_graph_linear_functions_N(0,1).json 
   --mode l2 
   --n_samples 1000 
-  --interventions_json examples/intervention_example.json 
+  --interventions_json examples/atomic_intervention.json 
   --save --plot
 ```
-with intervention_example.json containing
+with `atomic_intervention.json` containing
 ```plaintext
 {
   "X1": 5
 }
 ```
-for the intervention 'do(X1=5)'.
+for the intervention `do(X1=5)`.
 ##### (ii) Simultaneous and mixed-type interventions on multiple nodes:
 From a JSON file:
 ```plaintext
@@ -128,7 +128,7 @@ python scripts/sample_data.py \
   --interventions_json examples/mixed_interventions.json 
   --save --plot
 ```
-with mixed_interventions.json containing, for example:
+with `mixed_interventions.json` containing, for example:
 ```plaintext
 {
   "X1": 5,
