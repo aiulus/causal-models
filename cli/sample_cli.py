@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--n_samples', type=int, default=1000)
     parser.add_argument('--do', nargs='+', help="Interventions in format (X, value)")
     parser.add_argument('--observations_path', help="Required for counterfactuals (L3)")
+    parser.add_argument('--interventions_json', help="JSON file specifying interventions (for L2 or L3)")
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--save', action='store_true')
 
@@ -38,16 +39,32 @@ def main():
         data = sampler.sample_L1(scm, args.n_samples)
 
     elif args.mode == 'l2':
-        if not args.do:
-            raise ValueError("Please specify interventions with --do for L2 sampling.")
-        data = sampler.sample_L2(scm, args.n_samples, args.do)
+        if not args.do and not args.interventions_json:
+            raise ValueError("Please specify either --do or --interventions_json for L2 sampling.")
+
+        if args.interventions_json:
+            with open(args.interventions_json, 'r') as f:
+                interventions = json.load(f)
+        else:
+            interventions = args.do
+
+        data = sampler.sample_L2(scm, args.n_samples, interventions)
 
     elif args.mode == 'l3':
-        if not args.do or not args.observations_path:
-            raise ValueError("Both --do and --observations_path are required for L3 sampling.")
+        if not args.observations_path:
+            raise ValueError("L3 sampling requires --observations_path.")
+        if not args.do and not args.interventions_json:
+            raise ValueError("Please specify either --do or --interventions_json for L3 sampling.")
+
+        if args.interventions_json:
+            with open(args.interventions_json, 'r') as f:
+                interventions = json.load(f)
+        else:
+            interventions = args.do
+
         with open(args.observations_path, 'r') as f:
             obs = json.load(f)
-        data = counterfactuals.sample_L3(scm, L1_obs=obs, interventions=args.do, n_samples=args.n_samples)
+        data = counterfactuals.sample_L3(scm, L1_obs=obs, interventions=interventions, n_samples=args.n_samples)
 
     else:
         raise ValueError(f"Unsupported mode: {args.mode}")

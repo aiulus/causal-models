@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+import json
 from utils import io
 
 
@@ -9,14 +10,55 @@ class SCM:
         self.interventions = {}
         self.rewards = {}
 
+    @classmethod
+    def from_functions(cls, functions: dict, noise: dict):
+        """
+        Build SCM from explicitly specified functions and noise.
+        Graph will be inferred from function argument names.
+        """
+        import re
+        nodes = list(functions.keys())
+        edges = []
+
+        for node, f_str in functions.items():
+            args = re.findall(r'lambda\s+(.*?):', f_str)
+            if args:
+                parents = [arg.strip() for arg in args[0].split(',') if arg.strip() != '_']
+                edges += [(parent, node) for parent in parents]
+
+        G = nx.DiGraph()
+        G.add_nodes_from(nodes)
+        G.add_edges_from(edges)
+
+        return cls({
+            "nodes": nodes,
+            "edges": list(G.edges),
+            "functions": functions,
+            "noise": noise
+        })
+
     def intervene(self, interventions):
-        if isinstance(interventions, list):  # Accept ["(X1, 5)", "(X2, 0)"]
+        if isinstance(interventions, list):  # e.g., ["(X1, 5)"]
             interventions = io.parse_interventions(interventions)
 
         for variable, val in interventions.items():
-            lambda_string = f"lambda _: {val}"
-            self.interventions[variable] = val
-            self.F[variable] = lambda_string
+            if isinstance(val, (int, float, str)):
+                # Atomic intervention
+                self.interventions[variable] = val
+                self.F[variable] = f"lambda _: {val}"
+
+            elif isinstance(val, dict):
+                # Extended intervention
+                self.interventions[variable] = val
+                if "function" in val:
+                    self.F[variable] = val["function"]
+                if "noise" in val:
+                    self.N[variable] = val["noise"]
+
+    def intervene_from_json(self, path):
+        with open(path, 'r') as f:
+            interventions = json.load(f)
+        self.intervene(interventions)
 
     def abduction(self, L1):
         noise_data = {}

@@ -1,0 +1,7 @@
+{
+  "X1": 5,
+  "X2": {
+    "function": "lambda X1: X1 + 2",
+    "noise": ["gaussian", [0, 0.1]]
+  }
+}

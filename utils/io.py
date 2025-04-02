@@ -86,6 +86,16 @@ def make_do_suffix(do_list):
 
 # === INTERVENTION PARSING ===
 def parse_interventions(do_list):
+    """
+    Parse interventions into a dict.
+
+    Accepts:
+    - list of strings: ["(X1, 5)", "(X2, 3)"]
+    - dict: {"X1": 5, "X2": {"new_function": ..., "new_noise": ...}}
+    """
+    if isinstance(do_list, dict):
+        return do_list  # already parsed from JSON
+
     do_dict = {}
     if not isinstance(do_list, list):
         do_list = [do_list]
@@ -94,6 +104,7 @@ def parse_interventions(do_list):
         variable, value = intervention.strip('()').split(',')
         do_dict[variable.strip()] = value.strip()
     return do_dict
+
 
 
 # === CSV UTILS ===

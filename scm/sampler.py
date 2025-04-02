@@ -64,12 +64,32 @@ def sample_L2(scm, n_samples, interventions):
 
     for X_j in nx.topological_sort(scm.G):
         if X_j in do_dict:
-            data[X_j] = np.repeat(float(do_dict[X_j]), n_samples)
+            intervention = do_dict[X_j]
+
+            if isinstance(intervention, (int, float, str)):
+                data[X_j] = np.repeat(float(intervention), n_samples)
+
+            elif isinstance(intervention, dict):
+                if "value" in intervention:
+                    data[X_j] = np.repeat(float(intervention["value"]), n_samples)
+                else:
+                    # Evaluate custom function as defined in SCM.F[X_j]
+                    f_j = scm.F[X_j]
+                    result = _evaluate_function(f_j, data, n_samples)
+
+                    # Optional noise (added if present in scm.N)
+                    if X_j in scm.N:
+                        noise_dist = noise_utils.generate_distribution(scm.N[X_j])
+                        noise = noise_dist(n_samples)
+                        result += noise
+
+                    data[X_j] = result
+
         elif scm.G.in_degree(X_j) == 0:
             data[X_j] = noise_data[X_j]
+
         else:
             f_j = scm.F[X_j]
-            # result = _evaluate_function(f_j, data)
             result = _evaluate_function(f_j, data, n_samples)
             data[X_j] = result + noise_data[X_j]
 
