@@ -2,13 +2,15 @@ import os
 import json
 import csv
 import uuid
+from pathlib import Path
 import networkx as nx
 import pandas as pd
 
 
 # Load config from file
 def configuration_loader(config_file="global_variables.json"):
-    config_path = os.path.join("config", config_file)
+    project_root = Path(__file__).resolve().parents[1]  # Adjust this if your structure is deeper
+    config_path = project_root / "config" / config_file
     with open(config_path, 'r') as f:
         return json.load(f)
 

@@ -69,3 +69,41 @@ def test_parse_interventions():
     do = ["(X1, 0)", "(X2, 1.5)"]
     parsed = io.parse_interventions(do)
     assert parsed == {"X1": "0", "X2": "1.5"}
+
+
+def test_scm_from_functions_builds_correct_graph():
+    functions = {
+        "X1": "lambda _: 0",
+        "X2": "lambda X1: 2 * X1",
+        "X3": "lambda X1, X2: X1 + X2",
+        "Y": "lambda X2, X3: X2 - X3"
+    }
+
+    noise = {
+        "X1": ("gaussian", [0, 1]),
+        "X2": ("gaussian", [0, 1]),
+        "X3": ("gaussian", [0, 1]),
+        "Y": ("gaussian", [0, 1])
+    }
+
+    scm = SCM.from_functions(functions=functions, noise=noise)
+
+    # === Graph structure check ===
+    G = scm.G
+    assert set(G.nodes) == set(functions.keys())
+    assert set(G.edges) == {
+        ("X1", "X2"),
+        ("X1", "X3"),
+        ("X2", "X3"),
+        ("X2", "Y"),
+        ("X3", "Y"),
+    }
+
+    # === Sample from SCM ===
+    data = sampler.sample_L1(scm, 1000)
+    assert all(len(values) == 1000 for values in data.values())
+
+    # === Distribution sanity check ===
+    variances = [np.var(data[k]) for k in sorted(data)]
+    print("Sample variances:", variances)
+    assert all(var > 0 for var in variances)
