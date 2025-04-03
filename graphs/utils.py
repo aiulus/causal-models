@@ -1,5 +1,6 @@
 import networkx as nx
-
+from itertools import chain, combinations
+from typing import List, Set, Tuple, Dict
 
 def is_dag(G):
     """Check if a directed graph is acyclic."""
@@ -58,3 +59,32 @@ def get_bidirected_pairs(hidden_nodes, G):
             for j in range(i + 1, len(children)):
                 bidirected.add(tuple(sorted((children[i], children[j]))))
     return list(bidirected)
+
+
+def get_ancestors(G: nx.DiGraph, node: str) -> Set[str]:
+    return nx.ancestors(G, node).union({node})
+
+
+def get_descendants(G: nx.DiGraph, nodes: Set[str]) -> Set[str]:
+    desc = set(nodes)
+    for node in nodes:
+        desc |= nx.descendants(G, node)
+    return desc
+
+
+def c_component(G: nx.DiGraph) -> List[Set[str]]:
+    """Finds c-components using bidirected edges marked by a special attribute."""
+    bidirected_subgraph = nx.Graph()
+    for u, v, d in G.edges(data=True):
+        if d.get("confounded", False):
+            bidirected_subgraph.add_edge(u, v)
+    return list(nx.connected_components(bidirected_subgraph))
+
+
+def reversed_topological(G: nx.DiGraph, exclude: Set[str]) -> List[str]:
+    nodes = [n for n in nx.topological_sort(G) if n not in exclude]
+    return list(reversed(nodes))
+
+
+def induce_subgraph(G: nx.DiGraph, nodes: Set[str]) -> nx.DiGraph:
+    return G.subgraph(nodes).copy()
