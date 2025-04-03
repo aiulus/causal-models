@@ -1,2 +1,4 @@
 /outputs
 /discarded
+__pycache__/
+*.py[cod]
